@@ -32,20 +32,15 @@ WHERE e1.NomEtape = 'Orléans';
 
 
 -- QUESTION 3.2 C
-WITH RECURSIVE Chemin AS (
-  SELECT t.PointArrivee AS CodeEtape
-  FROM Troncon t
-  INNER JOIN Etape e ON t.PointArrivee = e.CodeEtape
-  INNER JOIN Etape o ON t.PointDepart = o.CodeEtape
-  WHERE o.NomEtape = 'Orléans'
-  
-  UNION ALL
-  
-  SELECT PointArrivee
-  FROM Chemin
-  NATURAL JOIN Troncon WHERE CodeEtape = PointDepart
+SELECT e.NomEtape
+FROM Troncon t
+JOIN Etape e ON t.PointArrivee = e.CodeEtape
+WHERE t.PointDepart IN (
+    SELECT e2.CodeEtape
+    FROM Troncon t2
+    JOIN Etape e1 ON t2.PointDepart = e1.CodeEtape
+    JOIN Etape e2 ON t2.PointArrivee = e2.CodeEtape
+    START WITH e1.NomEtape = 'Orléans'
+    CONNECT BY PRIOR t2.PointArrivee = t2.PointDepart
 )
-
-SELECT NomEtape
-FROM Chemin
-NATURAL JOIN Etape WHERE CodeEtape = CodeEtape;
+ORDER BY t.Distance;
